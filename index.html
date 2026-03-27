@@ -6,111 +6,225 @@
 <title>KaufBuddy – Günstig einkaufen</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; min-height: 100vh; }
-.header { background: #1a8c5b; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 10px; }
-.header h1 { font-size: 22px; font-weight: 600; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0ea; min-height: 100vh; }
+.header { background: #1a8c5b; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
 .header span { color: #a8f0d0; }
-.app { max-width: 480px; margin: 0 auto; padding: 16px; }
-.add-row { display: flex; gap: 8px; margin-bottom: 20px; margin-top: 16px; }
-.add-row input { flex: 1; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; background: white; }
-.add-row button { padding: 12px 18px; background: #1a8c5b; color: white; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: 500; }
-.section-label { font-size: 12px; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-.item-card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.header small { font-size: 12px; color: #a8f0d0; }
+.cats { display: flex; gap: 8px; padding: 14px 16px; overflow-x: auto; background: white; border-bottom: 1px solid #eee; }
+.cats::-webkit-scrollbar { display: none; }
+.cat-btn { padding: 7px 14px; border-radius: 20px; border: 1.5px solid #ddd; background: white; font-size: 13px; cursor: pointer; white-space: nowrap; color: #555; font-weight: 500; }
+.cat-btn.active { background: #1a8c5b; color: white; border-color: #1a8c5b; }
+.app { max-width: 480px; margin: 0 auto; padding: 14px; }
+.add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.add-row input { flex: 1; padding: 12px 14px; border: 1.5px solid #ddd; border-radius: 12px; font-size: 15px; background: white; }
+.add-row input:focus { outline: none; border-color: #1a8c5b; }
+.add-row button { padding: 12px 18px; background: #1a8c5b; color: white; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; font-weight: 600; }
+.section-label { font-size: 11px; color: #999; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.item-card { background: white; border-radius: 14px; padding: 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.item-name { font-size: 16px; font-weight: 500; color: #222; }
+.item-left { display: flex; align-items: center; gap: 10px; }
+.item-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.item-name { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+.item-cat { font-size: 12px; color: #999; }
 .item-qty { display: flex; align-items: center; gap: 10px; }
-.qty-btn { width: 28px; height: 28px; border: 1px solid #ddd; border-radius: 50%; background: #f5f5f0; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: #333; }
-.qty-num { font-size: 15px; font-weight: 500; min-width: 20px; text-align: center; }
-.delete-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 18px; padding: 0 4px; margin-left: 6px; }
+.qty-btn { width: 30px; height: 30px; border: 1.5px solid #e0e0e0; border-radius: 50%; background: #f8f8f8; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: #333; }
+.qty-num { font-size: 15px; font-weight: 700; min-width: 20px; text-align: center; }
+.delete-btn { background: none; border: none; cursor: pointer; color: #ddd; font-size: 20px; padding: 0 4px; margin-left: 4px; }
 .prices { display: flex; gap: 6px; flex-wrap: wrap; }
-.price-tag { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.price-tag { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; font-size: 13px; font-weight: 600; }
 .price-tag.best { background: #e1f5ee; color: #0a6640; }
-.price-tag.mid { background: #f0f0ec; color: #666; }
-.price-tag.high { background: #fef0f0; color: #b03030; }
-.dot { width: 7px; height: 7px; border-radius: 50%; }
+.price-tag.mid { background: #f5f5f5; color: #777; }
+.price-tag.high { background: #fff0f0; color: #c03030; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .best .dot { background: #1a8c5b; }
-.mid .dot { background: #aaa; }
+.mid .dot { background: #bbb; }
 .high .dot { background: #e04040; }
-.summary { background: white; border-radius: 12px; padding: 16px; margin-top: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.sum-row { display: flex; justify-content: space-between; font-size: 14px; color: #666; padding: 4px 0; }
-.sum-row.best-total { font-size: 16px; font-weight: 600; color: #1a8c5b; padding-top: 10px; margin-top: 6px; border-top: 1px solid #eee; }
-.savings { font-size: 13px; color: #1a8c5b; text-align: right; margin-top: 6px; }
-.empty { text-align: center; color: #aaa; padding: 40px 20px; font-size: 15px; }
+.summary { background: white; border-radius: 14px; padding: 16px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.sum-title { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 12px; }
+.sum-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+.sum-row:last-of-type { border-bottom: none; }
+.sum-store { display: flex; align-items: center; gap: 8px; color: #555; }
+.sum-store-dot { width: 8px; height: 8px; border-radius: 50%; }
+.sum-price { font-weight: 600; color: #1a1a1a; }
+.sum-best { background: #f0fbf6; border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.sum-best-label { font-size: 13px; color: #1a8c5b; font-weight: 600; }
+.sum-best-price { font-size: 20px; font-weight: 800; color: #1a8c5b; }
+.savings-badge { background: #1a8c5b; color: white; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; margin-top: 8px; display: inline-block; }
+.empty { text-align: center; color: #bbb; padding: 50px 20px; font-size: 15px; }
+.empty-icon { font-size: 40px; margin-bottom: 10px; }
+.suggest { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.suggest-btn { padding: 6px 12px; background: white; border: 1.5px solid #e0e0e0; border-radius: 20px; font-size: 13px; cursor: pointer; color: #555; }
+.suggest-btn:hover { border-color: #1a8c5b; color: #1a8c5b; }
 </style>
 </head>
 <body>
 <div class="header">
   <h1>Kauf<span>Buddy</span></h1>
+  <small>Spare Geld beim Einkauf</small>
 </div>
+<div class="cats" id="cats"></div>
 <div class="app">
   <div class="add-row">
-    <input type="text" id="newItem" placeholder="Produkt hinzufügen... (z.B. Milch)" />
-    <button onclick="addItem()">+ Add</button>
+    <input type="text" id="newItem" placeholder="Produkt suchen oder hinzufügen..." />
+    <button onclick="addItem()">+</button>
   </div>
-  <div class="section-label">Einkaufsliste</div>
-  <div id="itemList"><div class="empty">Liste ist leer — füge Produkte hinzu!</div></div>
-  <div class="summary" id="summary" style="display:none">
-    <div class="sum-row"><span>Aldi gesamt</span><span id="tAldi"></span></div>
-    <div class="sum-row"><span>Lidl gesamt</span><span id="tLidl"></span></div>
-    <div class="sum-row"><span>Rewe gesamt</span><span id="tRewe"></span></div>
-    <div class="sum-row best-total"><span>Bestes Angebot</span><span id="tBest"></span></div>
-    <div class="savings" id="savings"></div>
+  <div class="suggest" id="suggest"></div>
+  <div class="section-label" id="listLabel" style="display:none">Einkaufsliste</div>
+  <div id="itemList">
+    <div class="empty"><div class="empty-icon">🛒</div>Liste ist leer<br>Füge Produkte hinzu!</div>
   </div>
+  <div id="summary" style="display:none"></div>
 </div>
 <script>
+const cats = [
+  {id:'all', label:'Alle', icon:'🛍️'},
+  {id:'lebensmittel', label:'Lebensmittel', icon:'🥗'},
+  {id:'getraenke', label:'Getränke', icon:'🥤'},
+  {id:'milch', label:'Milch & Käse', icon:'🥛'},
+  {id:'backwaren', label:'Backwaren', icon:'🍞'},
+  {id:'haushalt', label:'Haushalt', icon:'🧹'},
+  {id:'koerperpflege', label:'Körperpflege', icon:'🧴'},
+  {id:'papeterie', label:'Papeterie', icon:'📝'},
+  {id:'tierbedarf', label:'Tierbedarf', icon:'🐾'},
+];
+
 const db = {
-  "Milch": {aldi:0.89,lidl:0.95,rewe:1.09},
-  "Brot": {aldi:1.29,lidl:1.19,rewe:1.49},
-  "Eier": {aldi:2.19,lidl:2.29,rewe:2.79},
-  "Butter": {aldi:1.79,lidl:1.89,rewe:2.19},
-  "Kinder": {aldi:0.79,lidl:0.89,rewe:0.99},
-  "Joghurt": {aldi:0.49,lidl:0.55,rewe:0.69},
-  "Käse": {aldi:1.99,lidl:2.19,rewe:2.49},
-  "Wasser": {aldi:0.19,lidl:0.25,rewe:0.35},
-  "Bananen": {aldi:0.99,lidl:1.09,rewe:1.29},
-  "Äpfel": {aldi:1.49,lidl:1.59,rewe:1.89}
+  "Milch":       {cat:'milch',       icon:'🥛', bg:'#e8f4ff', aldi:0.89, lidl:0.95, rewe:1.09},
+  "Butter":      {cat:'milch',       icon:'🧈', bg:'#fff8e1', aldi:1.79, lidl:1.89, rewe:2.19},
+  "Käse":        {cat:'milch',       icon:'🧀', bg:'#fff8e1', aldi:1.99, lidl:2.19, rewe:2.49},
+  "Joghurt":     {cat:'milch',       icon:'🥛', bg:'#e8f4ff', aldi:0.49, lidl:0.55, rewe:0.69},
+  "Eier":        {cat:'lebensmittel',icon:'🥚', bg:'#fff8e1', aldi:2.19, lidl:2.29, rewe:2.79},
+  "Bananen":     {cat:'lebensmittel',icon:'🍌', bg:'#fffde7', aldi:0.99, lidl:1.09, rewe:1.29},
+  "Äpfel":       {cat:'lebensmittel',icon:'🍎', bg:'#ffebee', aldi:1.49, lidl:1.59, rewe:1.89},
+  "Tomaten":     {cat:'lebensmittel',icon:'🍅', bg:'#ffebee', aldi:0.99, lidl:1.09, rewe:1.39},
+  "Kartoffeln":  {cat:'lebensmittel',icon:'🥔', bg:'#fff3e0', aldi:1.29, lidl:1.39, rewe:1.69},
+  "Hühnerbrust": {cat:'lebensmittel',icon:'🍗', bg:'#fff3e0', aldi:3.99, lidl:4.29, rewe:4.99},
+  "Brot":        {cat:'backwaren',   icon:'🍞', bg:'#fff3e0', aldi:1.29, lidl:1.19, rewe:1.49},
+  "Brötchen":    {cat:'backwaren',   icon:'🥖', bg:'#fff8e1', aldi:0.19, lidl:0.22, rewe:0.29},
+  "Toastbrot":   {cat:'backwaren',   icon:'🍞', bg:'#fff3e0', aldi:0.89, lidl:0.95, rewe:1.19},
+  "Wasser":      {cat:'getraenke',   icon:'💧', bg:'#e3f2fd', aldi:0.19, lidl:0.25, rewe:0.35},
+  "Cola":        {cat:'getraenke',   icon:'🥤', bg:'#fce4ec', aldi:0.79, lidl:0.85, rewe:0.99},
+  "Orangensaft": {cat:'getraenke',   icon:'🍊', bg:'#fff3e0', aldi:0.99, lidl:1.09, rewe:1.29},
+  "Bier":        {cat:'getraenke',   icon:'🍺', bg:'#fff8e1', aldi:0.69, lidl:0.75, rewe:0.89},
+  "Wein":        {cat:'getraenke',   icon:'🍷', bg:'#fce4ec', aldi:3.99, lidl:4.49, rewe:5.99},
+  "Spülmittel":  {cat:'haushalt',    icon:'🧴', bg:'#e8f5e9', aldi:0.79, lidl:0.89, rewe:1.09},
+  "Waschmittel": {cat:'haushalt',    icon:'🧺', bg:'#e8f5e9', aldi:3.49, lidl:3.79, rewe:4.49},
+  "Toilettenpapier":{cat:'haushalt', icon:'🧻', bg:'#f5f5f5', aldi:2.99, lidl:3.19, rewe:3.79},
+  "Müllbeutel":  {cat:'haushalt',    icon:'🗑️', bg:'#f5f5f5', aldi:1.49, lidl:1.59, rewe:1.99},
+  "Shampoo":     {cat:'koerperpflege',icon:'🧴',bg:'#e8f4ff', aldi:1.49, lidl:1.69, rewe:2.19},
+  "Zahnpasta":   {cat:'koerperpflege',icon:'🦷',bg:'#e8f4ff', aldi:0.89, lidl:0.99, rewe:1.39},
+  "Deo":         {cat:'koerperpflege',icon:'🧴',bg:'#e8f4ff', aldi:1.29, lidl:1.49, rewe:1.99},
+  "Notizheft":   {cat:'papeterie',   icon:'📓', bg:'#f3e5f5', aldi:0.99, lidl:1.09, rewe:1.49},
+  "Kugelschreiber":{cat:'papeterie', icon:'🖊️', bg:'#f3e5f5', aldi:0.49, lidl:0.55, rewe:0.79},
+  "Hundefutter": {cat:'tierbedarf',  icon:'🐕', bg:'#fff3e0', aldi:1.99, lidl:2.19, rewe:2.79},
+  "Katzenfutter":{cat:'tierbedarf',  icon:'🐈', bg:'#fff3e0', aldi:0.59, lidl:0.65, rewe:0.89},
+  "Kinder":      {cat:'lebensmittel',icon:'🍫', bg:'#fce4ec', aldi:0.79, lidl:0.89, rewe:0.99},
 };
+
+const storeColors = {Aldi:'#1a8c5b', Lidl:'#f5a623', Rewe:'#e02020'};
 let items = [];
+let activeCat = 'all';
+
+function renderCats() {
+  const el = document.getElementById('cats');
+  el.innerHTML = cats.map(c => `<button class="cat-btn${activeCat===c.id?' active':''}" onclick="setCat('${c.id}')">${c.icon} ${c.label}</button>`).join('');
+}
+
+function setCat(id) {
+  activeCat = id;
+  renderCats();
+  renderSuggest();
+}
+
+function renderSuggest() {
+  const el = document.getElementById('suggest');
+  const keys = Object.keys(db).filter(k => activeCat==='all' || db[k].cat===activeCat).slice(0,8);
+  el.innerHTML = keys.map(k => `<button class="suggest-btn" onclick="addByName('${k}')">${db[k].icon} ${k}</button>`).join('');
+}
+
+function addByName(name) {
+  if (items.find(i => i.name===name)) return;
+  items.push({name, qty:1});
+  render();
+}
+
 function addItem() {
   const input = document.getElementById('newItem');
   const name = input.value.trim();
   if (!name) return;
-  const found = Object.keys(db).find(k => k.toLowerCase() === name.toLowerCase());
-  items.push({name: found || name, qty: 1});
-  input.value = '';
+  const found = Object.keys(db).find(k => k.toLowerCase()===name.toLowerCase());
+  if (items.find(i => i.name===(found||name))) { input.value=''; return; }
+  items.push({name: found||name, qty:1});
+  input.value='';
   render();
 }
-function changeQty(i, d) { items[i].qty = Math.max(1, items[i].qty + d); render(); }
-function removeItem(i) { items.splice(i, 1); render(); }
+
+function changeQty(i,d) { items[i].qty=Math.max(1,items[i].qty+d); render(); }
+function removeItem(i) { items.splice(i,1); render(); }
+
 function render() {
   const list = document.getElementById('itemList');
-  if (items.length === 0) { list.innerHTML = '<div class="empty">Liste ist leer — füge Produkte hinzu!</div>'; document.getElementById('summary').style.display='none'; return; }
+  const label = document.getElementById('listLabel');
+  const sum = document.getElementById('summary');
+
+  if (items.length===0) {
+    list.innerHTML='<div class="empty"><div class="empty-icon">🛒</div>Liste ist leer<br>Füge Produkte hinzu!</div>';
+    label.style.display='none';
+    sum.style.display='none';
+    return;
+  }
+
+  label.style.display='block';
   let tA=0,tL=0,tR=0;
+
   list.innerHTML = items.map((item,i) => {
     const p = db[item.name];
-    let pricesHTML = '';
+    let pricesHTML='';
     if (p) {
-      const s = [{n:'Aldi',v:p.aldi},{n:'Lidl',v:p.lidl},{n:'Rewe',v:p.rewe}].sort((a,b)=>a.v-b.v);
+      const s=[{n:'Aldi',v:p.aldi},{n:'Lidl',v:p.lidl},{n:'Rewe',v:p.rewe}].sort((a,b)=>a.v-b.v);
       tA+=p.aldi*item.qty; tL+=p.lidl*item.qty; tR+=p.rewe*item.qty;
-      pricesHTML = s.map((x,si) => `<div class="price-tag ${si===0?'best':si===1?'mid':'high'}"><div class="dot"></div>${x.n} ${(x.v*item.qty).toFixed(2)}€${si===0?' ✓':''}</div>`).join('');
+      pricesHTML=s.map((x,si)=>`<div class="price-tag ${si===0?'best':si===1?'mid':'high'}"><div class="dot"></div>${x.n} ${(x.v*item.qty).toFixed(2)}€${si===0?' ✓':''}</div>`).join('');
     } else {
-      pricesHTML = '<span style="font-size:13px;color:#aaa">Preis unbekannt</span>';
+      pricesHTML='<span style="font-size:13px;color:#bbb">Preis unbekannt</span>';
     }
-    return `<div class="item-card"><div class="item-top"><span class="item-name">${item.name}</span><div style="display:flex;align-items:center"><div class="item-qty"><button class="qty-btn" onclick="changeQty(${i},-1)">−</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div><button class="delete-btn" onclick="removeItem(${i})">×</button></div></div><div class="prices">${pricesHTML}</div></div>`;
+    const icon = p?p.icon:'📦';
+    const bg = p?p.bg:'#f5f5f5';
+    const catName = p?cats.find(c=>c.id===p.cat)?.label||'':'';
+    return `<div class="item-card">
+      <div class="item-top">
+        <div class="item-left">
+          <div class="item-icon" style="background:${bg}">${icon}</div>
+          <div><div class="item-name">${item.name}</div><div class="item-cat">${catName}</div></div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <div class="item-qty">
+            <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
+          </div>
+          <button class="delete-btn" onclick="removeItem(${i})">×</button>
+        </div>
+      </div>
+      <div class="prices">${pricesHTML}</div>
+    </div>`;
   }).join('');
-  const sum = document.getElementById('summary');
+
   if (tA||tL||tR) {
     sum.style.display='block';
-    document.getElementById('tAldi').textContent=tA.toFixed(2)+'€';
-    document.getElementById('tLidl').textContent=tL.toFixed(2)+'€';
-    document.getElementById('tRewe').textContent=tR.toFixed(2)+'€';
+    const stores=[{n:'Aldi',v:tA,c:'#1a8c5b'},{n:'Lidl',v:tL,c:'#f5a623'},{n:'Rewe',v:tR,c:'#e02020'}];
     const best=Math.min(tA,tL,tR), worst=Math.max(tA,tL,tR);
-    const bName=best===tA?'Aldi':best===tL?'Lidl':'Rewe';
-    document.getElementById('tBest').textContent=best.toFixed(2)+'€ ('+bName+')';
-    document.getElementById('savings').textContent='Du sparst '+(worst-best).toFixed(2)+'€ gegenüber dem teuersten';
+    const bestStore=stores.find(s=>s.v===best);
+    sum.innerHTML=`<div class="sum-title">Preisvergleich gesamt</div>
+      ${stores.sort((a,b)=>a.v-b.v).map(s=>`<div class="sum-row"><div class="sum-store"><div class="sum-store-dot" style="background:${s.c}"></div>${s.n}</div><div class="sum-price">${s.v.toFixed(2)}€</div></div>`).join('')}
+      <div class="sum-best"><div><div class="sum-best-label">Bestes Angebot</div><div style="font-size:12px;color:#999">${bestStore.n} ist am günstigsten</div></div><div class="sum-best-price">${best.toFixed(2)}€</div></div>
+      <div><span class="savings-badge">Du sparst ${(worst-best).toFixed(2)}€ 💰</span></div>`;
   }
 }
-document.getElementById('newItem').addEventListener('keydown', e => { if(e.key==='Enter') addItem(); });
+
+document.getElementById('newItem').addEventListener('keydown', e=>{ if(e.key==='Enter') addItem(); });
+renderCats();
+renderSuggest();
 </script>
 </body>
 </html>
