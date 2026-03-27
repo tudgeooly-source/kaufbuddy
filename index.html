@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaufBuddy – Günstig einkaufen</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; min-height: 100vh; }
+.header { background: #1a8c5b; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 10px; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header span { color: #a8f0d0; }
+.app { max-width: 480px; margin: 0 auto; padding: 16px; }
+.add-row { display: flex; gap: 8px; margin-bottom: 20px; margin-top: 16px; }
+.add-row input { flex: 1; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; background: white; }
+.add-row button { padding: 12px 18px; background: #1a8c5b; color: white; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: 500; }
+.section-label { font-size: 12px; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.item-card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.item-name { font-size: 16px; font-weight: 500; color: #222; }
+.item-qty { display: flex; align-items: center; gap: 10px; }
+.qty-btn { width: 28px; height: 28px; border: 1px solid #ddd; border-radius: 50%; background: #f5f5f0; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: #333; }
+.qty-num { font-size: 15px; font-weight: 500; min-width: 20px; text-align: center; }
+.delete-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 18px; padding: 0 4px; margin-left: 6px; }
+.prices { display: flex; gap: 6px; flex-wrap: wrap; }
+.price-tag { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.price-tag.best { background: #e1f5ee; color: #0a6640; }
+.price-tag.mid { background: #f0f0ec; color: #666; }
+.price-tag.high { background: #fef0f0; color: #b03030; }
+.dot { width: 7px; height: 7px; border-radius: 50%; }
+.best .dot { background: #1a8c5b; }
+.mid .dot { background: #aaa; }
+.high .dot { background: #e04040; }
+.summary { background: white; border-radius: 12px; padding: 16px; margin-top: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.sum-row { display: flex; justify-content: space-between; font-size: 14px; color: #666; padding: 4px 0; }
+.sum-row.best-total { font-size: 16px; font-weight: 600; color: #1a8c5b; padding-top: 10px; margin-top: 6px; border-top: 1px solid #eee; }
+.savings { font-size: 13px; color: #1a8c5b; text-align: right; margin-top: 6px; }
+.empty { text-align: center; color: #aaa; padding: 40px 20px; font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Kauf<span>Buddy</span></h1>
+</div>
+<div class="app">
+  <div class="add-row">
+    <input type="text" id="newItem" placeholder="Produkt hinzufügen... (z.B. Milch)" />
+    <button onclick="addItem()">+ Add</button>
+  </div>
+  <div class="section-label">Einkaufsliste</div>
+  <div id="itemList"><div class="empty">Liste ist leer — füge Produkte hinzu!</div></div>
+  <div class="summary" id="summary" style="display:none">
+    <div class="sum-row"><span>Aldi gesamt</span><span id="tAldi"></span></div>
+    <div class="sum-row"><span>Lidl gesamt</span><span id="tLidl"></span></div>
+    <div class="sum-row"><span>Rewe gesamt</span><span id="tRewe"></span></div>
+    <div class="sum-row best-total"><span>Bestes Angebot</span><span id="tBest"></span></div>
+    <div class="savings" id="savings"></div>
+  </div>
+</div>
+<script>
+const db = {
+  "Milch": {aldi:0.89,lidl:0.95,rewe:1.09},
+  "Brot": {aldi:1.29,lidl:1.19,rewe:1.49},
+  "Eier": {aldi:2.19,lidl:2.29,rewe:2.79},
+  "Butter": {aldi:1.79,lidl:1.89,rewe:2.19},
+  "Kinder": {aldi:0.79,lidl:0.89,rewe:0.99},
+  "Joghurt": {aldi:0.49,lidl:0.55,rewe:0.69},
+  "Käse": {aldi:1.99,lidl:2.19,rewe:2.49},
+  "Wasser": {aldi:0.19,lidl:0.25,rewe:0.35},
+  "Bananen": {aldi:0.99,lidl:1.09,rewe:1.29},
+  "Äpfel": {aldi:1.49,lidl:1.59,rewe:1.89}
+};
+let items = [];
+function addItem() {
+  const input = document.getElementById('newItem');
+  const name = input.value.trim();
+  if (!name) return;
+  const found = Object.keys(db).find(k => k.toLowerCase() === name.toLowerCase());
+  items.push({name: found || name, qty: 1});
+  input.value = '';
+  render();
+}
+function changeQty(i, d) { items[i].qty = Math.max(1, items[i].qty + d); render(); }
+function removeItem(i) { items.splice(i, 1); render(); }
+function render() {
+  const list = document.getElementById('itemList');
+  if (items.length === 0) { list.innerHTML = '<div class="empty">Liste ist leer — füge Produkte hinzu!</div>'; document.getElementById('summary').style.display='none'; return; }
+  let tA=0,tL=0,tR=0;
+  list.innerHTML = items.map((item,i) => {
+    const p = db[item.name];
+    let pricesHTML = '';
+    if (p) {
+      const s = [{n:'Aldi',v:p.aldi},{n:'Lidl',v:p.lidl},{n:'Rewe',v:p.rewe}].sort((a,b)=>a.v-b.v);
+      tA+=p.aldi*item.qty; tL+=p.lidl*item.qty; tR+=p.rewe*item.qty;
+      pricesHTML = s.map((x,si) => `<div class="price-tag ${si===0?'best':si===1?'mid':'high'}"><div class="dot"></div>${x.n} ${(x.v*item.qty).toFixed(2)}€${si===0?' ✓':''}</div>`).join('');
+    } else {
+      pricesHTML = '<span style="font-size:13px;color:#aaa">Preis unbekannt</span>';
+    }
+    return `<div class="item-card"><div class="item-top"><span class="item-name">${item.name}</span><div style="display:flex;align-items:center"><div class="item-qty"><button class="qty-btn" onclick="changeQty(${i},-1)">−</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div><button class="delete-btn" onclick="removeItem(${i})">×</button></div></div><div class="prices">${pricesHTML}</div></div>`;
+  }).join('');
+  const sum = document.getElementById('summary');
+  if (tA||tL||tR) {
+    sum.style.display='block';
+    document.getElementById('tAldi').textContent=tA.toFixed(2)+'€';
+    document.getElementById('tLidl').textContent=tL.toFixed(2)+'€';
+    document.getElementById('tRewe').textContent=tR.toFixed(2)+'€';
+    const best=Math.min(tA,tL,tR), worst=Math.max(tA,tL,tR);
+    const bName=best===tA?'Aldi':best===tL?'Lidl':'Rewe';
+    document.getElementById('tBest').textContent=best.toFixed(2)+'€ ('+bName+')';
+    document.getElementById('savings').textContent='Du sparst '+(worst-best).toFixed(2)+'€ gegenüber dem teuersten';
+  }
+}
+document.getElementById('newItem').addEventListener('keydown', e => { if(e.key==='Enter') addItem(); });
+</script>
+</body>
+</html>
