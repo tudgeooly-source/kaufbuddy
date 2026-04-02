@@ -91,29 +91,31 @@ function findStores(){
   if(!navigator.geolocation){el.innerHTML='<div style="color:#e04040;font-size:13px">GPS nicht verfügbar</div>';return;}
   navigator.geolocation.getCurrentPosition(pos=>{
     const lat=pos.coords.latitude,lng=pos.coords.longitude;
-    const q='[out:json][timeout:15];(node["name"~"Aldi|Lidl|Rewe","i"]["shop"~"supermarket|discount"](around:3000,'+lat+','+lng+');way["name"~"Aldi|Lidl|Rewe","i"]["shop"~"supermarket|discount"](around:3000,'+lat+','+lng+'););out center;';
+    const stores=['Aldi','Lidl','Rewe','Netto','Penny','Edeka'];
+    const colors={aldi:'#1a8c5b',lidl:'#f5a623',rewe:'#e02020',netto:'#ffcc00',penny:'#cc0000',edeka:'#e20020'};
+    const q='[out:json][timeout:20];(node["shop"~"supermarket|convenience|discount"](around:3000,'+lat+','+lng+');way["shop"~"supermarket|convenience|discount"](around:3000,'+lat+','+lng+'););out center;';
     fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q))
     .then(r=>r.json())
     .then(data=>{
       const found={};
-      const colors={aldi:'#1a8c5b',lidl:'#f5a623',rewe:'#e02020'};
       data.elements.forEach(e=>{
         const name=(e.tags&&e.tags.name)||'';
         const elat=e.lat||(e.center&&e.center.lat);
         const elng=e.lon||(e.center&&e.center.lon);
-        if(!elat||!elng)return;
+        if(!elat||!elng||!name)return;
         const dist=Math.round(Math.sqrt(Math.pow((elat-lat)*111000,2)+Math.pow((elng-lng)*71500,2)));
-        ['Aldi','Lidl','Rewe'].forEach(s=>{
+        stores.forEach(s=>{
           if(name.toLowerCase().includes(s.toLowerCase())){
-            if(!found[s]||dist<found[s].dist)found[s]={name:s,dist,lat:elat,lng:elng};
+            const key=s;
+            if(!found[key]||dist<found[key].dist)found[key]={name:s,dist,lat:elat,lng:elng,fullName:name};
           }
         });
       });
-      const stores=Object.values(found).sort((a,b)=>a.dist-b.dist);
-      if(!stores.length){el.innerHTML='<div style="color:#999;font-size:13px;padding:8px">Keine Geschäfte gefunden (3km Radius)</div>';return;}
-      el.innerHTML=stores.map(s=>'<div class="store-item"><div class="store-left"><div class="store-dot-big" style="background:'+(colors[s.name.toLowerCase()]||'#888')+'"></div><div><div class="store-name">'+s.name+'</div><div class="store-addr">'+(s.dist<1000?s.dist+' m':(s.dist/1000).toFixed(1)+' km')+' entfernt</div></div></div><div style="display:flex;align-items:center;gap:8px"><span class="store-dist">'+(s.dist<1000?s.dist+' m':(s.dist/1000).toFixed(1)+' km')+'</span><button class="store-nav" onclick="openMaps(''+s.name+'','+lat+','+lng+'')">&#128506; Nav</button></div></div>').join('');
+      const sorted=Object.values(found).sort((a,b)=>a.dist-b.dist);
+      if(!sorted.length){el.innerHTML='<div style="color:#999;font-size:13px;padding:8px">Keine Geschäfte gefunden (3km)</div>';return;}
+      el.innerHTML=sorted.map(s=>'<div class="store-item"><div class="store-left"><div class="store-dot-big" style="background:'+(colors[s.name.toLowerCase()]||'#888')+'"></div><div><div class="store-name">'+s.fullName+'</div><div class="store-addr">'+(s.dist<1000?s.dist+' m':(s.dist/1000).toFixed(1)+' km')+' entfernt</div></div></div><div style="display:flex;align-items:center;gap:8px"><span class="store-dist">'+(s.dist<1000?s.dist+' m':(s.dist/1000).toFixed(1)+' km')+'</span><button class="store-nav" onclick="openMaps(''+s.fullName+'','+lat+','+lng+'')">&#128506; Nav</button></div></div>').join('');
     })
-    .catch(()=>{el.innerHTML='<div style="color:#e04040;font-size:13px;padding:8px">Fehler beim Laden der Geschäfte</div>';});
+    .catch(()=>{el.innerHTML='<div style="color:#e04040;font-size:13px;padding:8px">Fehler beim Laden</div>';});
   },()=>{el.innerHTML='<div style="color:#e04040;font-size:13px;padding:8px">GPS-Zugriff verweigert. Bitte Standort im Browser erlauben!</div>';});
 }
 function openMaps(s,lat,lng){window.open('https://www.google.com/maps/search/'+s+'/@'+lat+','+lng+',14z','_blank');}
