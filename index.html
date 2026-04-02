@@ -43,7 +43,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .summary { background: white; border-radius: 14px; padding: 16px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .sum-title { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 12px; }
 .sum-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
-.sum-row:last-of-type { border-bottom: none; }
 .sum-store { display: flex; align-items: center; gap: 8px; color: #555; }
 .sum-store-dot { width: 8px; height: 8px; border-radius: 50%; }
 .sum-price { font-weight: 600; color: #1a1a1a; }
@@ -69,185 +68,35 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>Kauf<span>Buddy</span></h1>
-  <small>Spare Geld beim Einkauf</small>
-</div>
+<div class="header"><h1>Kauf<span>Buddy</span></h1><small>Spare Geld beim Einkauf</small></div>
 <div class="cats" id="cats"></div>
 <div class="app">
-  <div class="gps-card">
-    <div class="gps-title">📍 Magazine în apropiere</div>
-    <div id="storeList"><button class="gps-btn" onclick="findStores()">📍 Găsește magazine lângă mine</button></div>
-  </div>
-  <div class="add-row">
-    <input type="text" id="newItem" placeholder="Produkt suchen oder hinzufügen..." />
-    <button onclick="addItem()">+</button>
-  </div>
-  <div class="suggest" id="suggest"></div>
-  <div class="section-label" id="listLabel" style="display:none">Einkaufsliste</div>
-  <div id="itemList">
-    <div class="empty"><div class="empty-icon">🛒</div>Liste ist leer<br>Füge Produkte hinzu!</div>
-  </div>
-  <div id="summary" style="display:none"></div>
+<div class="gps-card">
+  <div class="gps-title">Geschäfte in der Nähe</div>
+  <div id="storeList"><button class="gps-btn" onclick="findStores()">Geschäfte in meiner Nähe finden</button></div>
+</div>
+<div class="add-row"><input type="text" id="newItem" placeholder="Produkt hinzufügen..." /><button onclick="addItem()">+</button></div>
+<div class="suggest" id="suggest"></div>
+<div class="section-label" id="listLabel" style="display:none">Einkaufsliste</div>
+<div id="itemList"><div class="empty"><div class="empty-icon">&#128722;</div>Liste ist leer<br>Füge Produkte hinzu!</div></div>
+<div id="summary" style="display:none"></div>
 </div>
 <script>
-const cats = [
-  {id:'all', label:'Alle', icon:'🛍️'},
-  {id:'lebensmittel', label:'Lebensmittel', icon:'🥗'},
-  {id:'getraenke', label:'Getränke', icon:'🥤'},
-  {id:'milch', label:'Milch & Käse', icon:'🥛'},
-  {id:'backwaren', label:'Backwaren', icon:'🍞'},
-  {id:'haushalt', label:'Haushalt', icon:'🧹'},
-  {id:'koerperpflege', label:'Körperpflege', icon:'🧴'},
-  {id:'papeterie', label:'Papeterie', icon:'📝'},
-  {id:'tierbedarf', label:'Tierbedarf', icon:'🐾'},
-];
-
-const db = {
-  "Milch":       {cat:'milch',       icon:'🥛', bg:'#e8f4ff', aldi:0.89, lidl:0.95, rewe:1.09},
-  "Butter":      {cat:'milch',       icon:'🧈', bg:'#fff8e1', aldi:1.79, lidl:1.89, rewe:2.19},
-  "Käse":        {cat:'milch',       icon:'🧀', bg:'#fff8e1', aldi:1.99, lidl:2.19, rewe:2.49},
-  "Joghurt":     {cat:'milch',       icon:'🥛', bg:'#e8f4ff', aldi:0.49, lidl:0.55, rewe:0.69},
-  "Eier":        {cat:'lebensmittel',icon:'🥚', bg:'#fff8e1', aldi:2.19, lidl:2.29, rewe:2.79},
-  "Bananen":     {cat:'lebensmittel',icon:'🍌', bg:'#fffde7', aldi:0.99, lidl:1.09, rewe:1.29},
-  "Äpfel":       {cat:'lebensmittel',icon:'🍎', bg:'#ffebee', aldi:1.49, lidl:1.59, rewe:1.89},
-  "Tomaten":     {cat:'lebensmittel',icon:'🍅', bg:'#ffebee', aldi:0.99, lidl:1.09, rewe:1.39},
-  "Kartoffeln":  {cat:'lebensmittel',icon:'🥔', bg:'#fff3e0', aldi:1.29, lidl:1.39, rewe:1.69},
-  "Hühnerbrust": {cat:'lebensmittel',icon:'🍗', bg:'#fff3e0', aldi:3.99, lidl:4.29, rewe:4.99},
-  "Zucker":      {cat:'lebensmittel',icon:'🍬', bg:'#fff8e1', aldi:0.99, lidl:1.09, rewe:1.29},
-  "Nutella":     {cat:'lebensmittel',icon:'🍫', bg:'#fff3e0', aldi:2.99, lidl:3.19, rewe:3.49},
-  "Brot":        {cat:'backwaren',   icon:'🍞', bg:'#fff3e0', aldi:1.29, lidl:1.19, rewe:1.49},
-  "Brötchen":    {cat:'backwaren',   icon:'🥖', bg:'#fff8e1', aldi:0.19, lidl:0.22, rewe:0.29},
-  "Toastbrot":   {cat:'backwaren',   icon:'🍞', bg:'#fff3e0', aldi:0.89, lidl:0.95, rewe:1.19},
-  "Wasser":      {cat:'getraenke',   icon:'💧', bg:'#e3f2fd', aldi:0.19, lidl:0.25, rewe:0.35},
-  "Cola":        {cat:'getraenke',   icon:'🥤', bg:'#fce4ec', aldi:0.79, lidl:0.85, rewe:0.99},
-  "Orangensaft": {cat:'getraenke',   icon:'🍊', bg:'#fff3e0', aldi:0.99, lidl:1.09, rewe:1.29},
-  "Bier":        {cat:'getraenke',   icon:'🍺', bg:'#fff8e1', aldi:0.69, lidl:0.75, rewe:0.89},
-  "Wein":        {cat:'getraenke',   icon:'🍷', bg:'#fce4ec', aldi:3.99, lidl:4.49, rewe:5.99},
-  "Spülmittel":  {cat:'haushalt',    icon:'🧴', bg:'#e8f5e9', aldi:0.79, lidl:0.89, rewe:1.09},
-  "Waschmittel": {cat:'haushalt',    icon:'🧺', bg:'#e8f5e9', aldi:3.49, lidl:3.79, rewe:4.49},
-  "Toilettenpapier":{cat:'haushalt', icon:'🧻', bg:'#f5f5f5', aldi:2.99, lidl:3.19, rewe:3.79},
-  "Müllbeutel":  {cat:'haushalt',    icon:'🗑️', bg:'#f5f5f5', aldi:1.49, lidl:1.59, rewe:1.99},
-  "Shampoo":     {cat:'koerperpflege',icon:'🧴',bg:'#e8f4ff', aldi:1.49, lidl:1.69, rewe:2.19},
-  "Zahnpasta":   {cat:'koerperpflege',icon:'🦷',bg:'#e8f4ff', aldi:0.89, lidl:0.99, rewe:1.39},
-  "Deo":         {cat:'koerperpflege',icon:'🧴',bg:'#e8f4ff', aldi:1.29, lidl:1.49, rewe:1.99},
-  "Notizheft":   {cat:'papeterie',   icon:'📓', bg:'#f3e5f5', aldi:0.99, lidl:1.09, rewe:1.49},
-  "Kugelschreiber":{cat:'papeterie', icon:'🖊️', bg:'#f3e5f5', aldi:0.49, lidl:0.55, rewe:0.79},
-  "Hundefutter": {cat:'tierbedarf',  icon:'🐕', bg:'#fff3e0', aldi:1.99, lidl:2.19, rewe:2.79},
-  "Katzenfutter":{cat:'tierbedarf',  icon:'🐈', bg:'#fff3e0', aldi:0.59, lidl:0.65, rewe:0.89},
-  "Kinder":      {cat:'lebensmittel',icon:'🍫', bg:'#fce4ec', aldi:0.79, lidl:0.89, rewe:0.99},
-};
-
-let items = [];
-let activeCat = 'all';
-
-function findStores() {
-  const el = document.getElementById('storeList');
-  el.innerHTML = '<div style="text-align:center;color:#999;padding:10px">📍 Caută magazine...</div>';
-  if (!navigator.geolocation) {
-    el.innerHTML = '<div style="color:#e04040;font-size:13px">GPS nu e disponibil</div>';
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(pos => {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const stores = [
-      {name:'Aldi', color:'#1a8c5b', dist: (Math.random()*1.5+0.2).toFixed(1)},
-      {name:'Lidl', color:'#f5a623', dist: (Math.random()*2+0.3).toFixed(1)},
-      {name:'Rewe', color:'#e02020', dist: (Math.random()*2.5+0.5).toFixed(1)},
-    ].sort((a,b)=>a.dist-b.dist);
-    el.innerHTML = stores.map(s =>
-      `<div class="store-item">
-        <div class="store-left">
-          <div class="store-dot-big" style="background:${s.color}"></div>
-          <div><div class="store-name">${s.name}</div><div class="store-addr">In deiner Nähe</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="store-dist">${s.dist} km</span>
-          <button class="store-nav" onclick="openMaps('${s.name}',${lat},${lng})">🗺️ Nav</button>
-        </div>
-      </div>`
-    ).join('');
-  }, () => {
-    el.innerHTML = '<div style="color:#e04040;font-size:13px;padding:8px">GPS acces refuzat. Permite locația în browser!</div>';
-  });
-}
-
-function openMaps(store, lat, lng) {
-  const url = `https://www.google.com/maps/search/${store}/@${lat},${lng},14z`;
-  window.open(url, '_blank');
-}
-
-function renderCats() {
-  const el = document.getElementById('cats');
-  el.innerHTML = cats.map(c => `<button class="cat-btn${activeCat===c.id?' active':''}" onclick="setCat('${c.id}')">${c.icon} ${c.label}</button>`).join('');
-}
-
-function setCat(id) { activeCat=id; renderCats(); renderSuggest(); }
-
-function renderSuggest() {
-  const el = document.getElementById('suggest');
-  const keys = Object.keys(db).filter(k => activeCat==='all' || db[k].cat===activeCat).slice(0,8);
-  el.innerHTML = keys.map(k => `<button class="suggest-btn" onclick="addByName('${k}')">${db[k].icon} ${k}</button>`).join('');
-}
-
-function addByName(name) {
-  if (items.find(i=>i.name===name)) return;
-  items.push({name,qty:1});
-  render();
-}
-
-function addItem() {
-  const input = document.getElementById('newItem');
-  const name = input.value.trim();
-  if (!name) return;
-  const found = Object.keys(db).find(k=>k.toLowerCase()===name.toLowerCase());
-  if (items.find(i=>i.name===(found||name))) { input.value=''; return; }
-  items.push({name:found||name,qty:1});
-  input.value='';
-  render();
-}
-
-function changeQty(i,d) { items[i].qty=Math.max(1,items[i].qty+d); render(); }
-function removeItem(i) { items.splice(i,1); render(); }
-
-function render() {
-  const list=document.getElementById('itemList');
-  const label=document.getElementById('listLabel');
-  const sum=document.getElementById('summary');
-  if (items.length===0) {
-    list.innerHTML='<div class="empty"><div class="empty-icon">🛒</div>Liste ist leer<br>Füge Produkte hinzu!</div>';
-    label.style.display='none'; sum.style.display='none'; return;
-  }
-  label.style.display='block';
-  let tA=0,tL=0,tR=0;
-  list.innerHTML=items.map((item,i)=>{
-    const p=db[item.name];
-    let pricesHTML='';
-    if (p) {
-      const s=[{n:'Aldi',v:p.aldi},{n:'Lidl',v:p.lidl},{n:'Rewe',v:p.rewe}].sort((a,b)=>a.v-b.v);
-      tA+=p.aldi*item.qty; tL+=p.lidl*item.qty; tR+=p.rewe*item.qty;
-      pricesHTML=s.map((x,si)=>`<div class="price-tag ${si===0?'best':si===1?'mid':'high'}"><div class="dot"></div>${x.n} ${(x.v*item.qty).toFixed(2)}€${si===0?' ✓':''}</div>`).join('');
-    } else {
-      pricesHTML='<span style="font-size:13px;color:#bbb">Preis unbekannt</span>';
-    }
-    const icon=p?p.icon:'📦';
-    const bg=p?p.bg:'#f5f5f5';
-    const catName=p?cats.find(c=>c.id===p.cat)?.label||'':'';
-    return `<div class="item-card"><div class="item-top"><div class="item-left"><div class="item-icon" style="background:${bg}">${icon}</div><div><div class="item-name">${item.name}</div><div class="item-cat">${catName}</div></div></div><div style="display:flex;align-items:center"><div class="item-qty"><button class="qty-btn" onclick="changeQty(${i},-1)">−</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div><button class="delete-btn" onclick="removeItem(${i})">×</button></div></div><div class="prices">${pricesHTML}</div></div>`;
-  }).join('');
-  if (tA||tL||tR) {
-    sum.style.display='block';
-    const stores=[{n:'Aldi',v:tA,c:'#1a8c5b'},{n:'Lidl',v:tL,c:'#f5a623'},{n:'Rewe',v:tR,c:'#e02020'}];
-    const best=Math.min(tA,tL,tR),worst=Math.max(tA,tL,tR);
-    const bestStore=stores.find(s=>s.v===best);
-    sum.innerHTML=`<div class="sum-title">Preisvergleich gesamt</div>${stores.sort((a,b)=>a.v-b.v).map(s=>`<div class="sum-row"><div class="sum-store"><div class="sum-store-dot" style="background:${s.c}"></div>${s.n}</div><div class="sum-price">${s.v.toFixed(2)}€</div></div>`).join('')}<div class="sum-best"><div><div class="sum-best-label">Bestes Angebot</div><div style="font-size:12px;color:#999">${bestStore.n} ist am günstigsten</div></div><div class="sum-best-price">${best.toFixed(2)}€</div></div><div><span class="savings-badge">Du sparst ${(worst-best).toFixed(2)}€ 💰</span></div>`;
-  }
-}
-
-document.getElementById('newItem').addEventListener('keydown',e=>{ if(e.key==='Enter') addItem(); });
-renderCats();
-renderSuggest();
+const cats=[{id:'all',label:'Alle',icon:'&#128717;'},{id:'lebensmittel',label:'Lebensmittel',icon:'&#129367;'},{id:'getraenke',label:'Getränke',icon:'&#129380;'},{id:'milch',label:'Milch & Käse',icon:'&#129371;'},{id:'backwaren',label:'Backwaren',icon:'&#127838;'},{id:'haushalt',label:'Haushalt',icon:'&#129529;'},{id:'koerperpflege',label:'Körperpflege',icon:'&#129524;'},{id:'papeterie',label:'Papeterie',icon:'&#128221;'},{id:'tierbedarf',label:'Tierbedarf',icon:'&#128062;'}];
+const db={"Milch":{cat:'milch',icon:'&#129371;',bg:'#e8f4ff',aldi:0.89,lidl:0.95,rewe:1.09},"Butter":{cat:'milch',icon:'&#129480;',bg:'#fff8e1',aldi:1.79,lidl:1.89,rewe:2.19},"Käse":{cat:'milch',icon:'&#129472;',bg:'#fff8e1',aldi:1.99,lidl:2.19,rewe:2.49},"Joghurt":{cat:'milch',icon:'&#129371;',bg:'#e8f4ff',aldi:0.49,lidl:0.55,rewe:0.69},"Eier":{cat:'lebensmittel',icon:'&#129370;',bg:'#fff8e1',aldi:2.19,lidl:2.29,rewe:2.79},"Bananen":{cat:'lebensmittel',icon:'&#127820;',bg:'#fffde7',aldi:0.99,lidl:1.09,rewe:1.29},"Äpfel":{cat:'lebensmittel',icon:'&#127822;',bg:'#ffebee',aldi:1.49,lidl:1.59,rewe:1.89},"Tomaten":{cat:'lebensmittel',icon:'&#127813;',bg:'#ffebee',aldi:0.99,lidl:1.09,rewe:1.39},"Kartoffeln":{cat:'lebensmittel',icon:'&#129364;',bg:'#fff3e0',aldi:1.29,lidl:1.39,rewe:1.69},"Hühnerbrust":{cat:'lebensmittel',icon:'&#127831;',bg:'#fff3e0',aldi:3.99,lidl:4.29,rewe:4.99},"Zucker":{cat:'lebensmittel',icon:'&#127852;',bg:'#fff8e1',aldi:0.99,lidl:1.09,rewe:1.29},"Nutella":{cat:'lebensmittel',icon:'&#127851;',bg:'#fff3e0',aldi:2.99,lidl:3.19,rewe:3.49},"Brot":{cat:'backwaren',icon:'&#127838;',bg:'#fff3e0',aldi:1.29,lidl:1.19,rewe:1.49},"Brötchen":{cat:'backwaren',icon:'&#129366;',bg:'#fff8e1',aldi:0.19,lidl:0.22,rewe:0.29},"Toastbrot":{cat:'backwaren',icon:'&#127838;',bg:'#fff3e0',aldi:0.89,lidl:0.95,rewe:1.19},"Wasser":{cat:'getraenke',icon:'&#128167;',bg:'#e3f2fd',aldi:0.19,lidl:0.25,rewe:0.35},"Cola":{cat:'getraenke',icon:'&#129380;',bg:'#fce4ec',aldi:0.79,lidl:0.85,rewe:0.99},"Orangensaft":{cat:'getraenke',icon:'&#127818;',bg:'#fff3e0',aldi:0.99,lidl:1.09,rewe:1.29},"Bier":{cat:'getraenke',icon:'&#127866;',bg:'#fff8e1',aldi:0.69,lidl:0.75,rewe:0.89},"Wein":{cat:'getraenke',icon:'&#127863;',bg:'#fce4ec',aldi:3.99,lidl:4.49,rewe:5.99},"Spülmittel":{cat:'haushalt',icon:'&#129524;',bg:'#e8f5e9',aldi:0.79,lidl:0.89,rewe:1.09},"Waschmittel":{cat:'haushalt',icon:'&#129530;',bg:'#e8f5e9',aldi:3.49,lidl:3.79,rewe:4.49},"Toilettenpapier":{cat:'haushalt',icon:'&#129531;',bg:'#f5f5f5',aldi:2.99,lidl:3.19,rewe:3.79},"Müllbeutel":{cat:'haushalt',icon:'&#128465;',bg:'#f5f5f5',aldi:1.49,lidl:1.59,rewe:1.99},"Shampoo":{cat:'koerperpflege',icon:'&#129524;',bg:'#e8f4ff',aldi:1.49,lidl:1.69,rewe:2.19},"Zahnpasta":{cat:'koerperpflege',icon:'&#129463;',bg:'#e8f4ff',aldi:0.89,lidl:0.99,rewe:1.39},"Deo":{cat:'koerperpflege',icon:'&#129524;',bg:'#e8f4ff',aldi:1.29,lidl:1.49,rewe:1.99},"Notizheft":{cat:'papeterie',icon:'&#128211;',bg:'#f3e5f5',aldi:0.99,lidl:1.09,rewe:1.49},"Kugelschreiber":{cat:'papeterie',icon:'&#128394;',bg:'#f3e5f5',aldi:0.49,lidl:0.55,rewe:0.79},"Hundefutter":{cat:'tierbedarf',icon:'&#128021;',bg:'#fff3e0',aldi:1.99,lidl:2.19,rewe:2.79},"Katzenfutter":{cat:'tierbedarf',icon:'&#128008;',bg:'#fff3e0',aldi:0.59,lidl:0.65,rewe:0.89},"Kinder":{cat:'lebensmittel',icon:'&#127851;',bg:'#fce4ec',aldi:0.79,lidl:0.89,rewe:0.99}};
+let items=[],activeCat='all';
+function findStores(){const el=document.getElementById('storeList');el.innerHTML='<div style="text-align:center;color:#999;padding:10px">Suche Geschäfte...</div>';if(!navigator.geolocation){el.innerHTML='<div style="color:#e04040;font-size:13px">GPS nicht verfügbar</div>';return;}navigator.geolocation.getCurrentPosition(pos=>{const lat=pos.coords.latitude,lng=pos.coords.longitude,stores=[{name:'Aldi',color:'#1a8c5b',dist:(Math.random()*1.5+0.2).toFixed(1)},{name:'Lidl',color:'#f5a623',dist:(Math.random()*2+0.3).toFixed(1)},{name:'Rewe',color:'#e02020',dist:(Math.random()*2.5+0.5).toFixed(1)}].sort((a,b)=>a.dist-b.dist);el.innerHTML=stores.map(s=>'<div class="store-item"><div class="store-left"><div class="store-dot-big" style="background:'+s.color+'"></div><div><div class="store-name">'+s.name+'</div><div class="store-addr">In deiner Nähe</div></div></div><div style="display:flex;align-items:center;gap:8px"><span class="store-dist">'+s.dist+' km</span><button class="store-nav" onclick="openMaps(''+s.name+'','+lat+','+lng+'')">Nav</button></div></div>').join('');},()=>{el.innerHTML='<div style="color:#e04040;font-size:13px;padding:8px">GPS-Zugriff verweigert. Bitte Standort im Browser erlauben!</div>';});}
+function openMaps(s,lat,lng){window.open('https://www.google.com/maps/search/'+s+'/@'+lat+','+lng+',14z','_blank');}
+function renderCats(){document.getElementById('cats').innerHTML=cats.map(c=>'<button class="cat-btn'+(activeCat===c.id?' active':'')+'" onclick="setCat(''+c.id+'')">'+c.icon+' '+c.label+'</button>').join('');}
+function setCat(id){activeCat=id;renderCats();renderSuggest();}
+function renderSuggest(){document.getElementById('suggest').innerHTML=Object.keys(db).filter(k=>activeCat==='all'||db[k].cat===activeCat).slice(0,8).map(k=>'<button class="suggest-btn" onclick="addByName(''+k+'')">'+db[k].icon+' '+k+'</button>').join('');}
+function addByName(name){if(items.find(i=>i.name===name))return;items.push({name,qty:1});render();}
+function addItem(){const input=document.getElementById('newItem'),name=input.value.trim();if(!name)return;const found=Object.keys(db).find(k=>k.toLowerCase()===name.toLowerCase());if(items.find(i=>i.name===(found||name))){input.value='';return;}items.push({name:found||name,qty:1});input.value='';render();}
+function changeQty(i,d){items[i].qty=Math.max(1,items[i].qty+d);render();}
+function removeItem(i){items.splice(i,1);render();}
+function render(){const list=document.getElementById('itemList'),label=document.getElementById('listLabel'),sum=document.getElementById('summary');if(items.length===0){list.innerHTML='<div class="empty"><div class="empty-icon">&#128722;</div>Liste ist leer<br>Füge Produkte hinzu!</div>';label.style.display='none';sum.style.display='none';return;}label.style.display='block';let tA=0,tL=0,tR=0;list.innerHTML=items.map((item,i)=>{const p=db[item.name];let ph='';if(p){const s=[{n:'Aldi',v:p.aldi},{n:'Lidl',v:p.lidl},{n:'Rewe',v:p.rewe}].sort((a,b)=>a.v-b.v);tA+=p.aldi*item.qty;tL+=p.lidl*item.qty;tR+=p.rewe*item.qty;ph=s.map((x,si)=>'<div class="price-tag '+(si===0?'best':si===1?'mid':'high')+'"><div class="dot"></div>'+x.n+' '+(x.v*item.qty).toFixed(2)+'&euro;'+(si===0?' &#10003;':'')+'</div>').join('');}else{ph='<span style="font-size:13px;color:#bbb">Preis unbekannt</span>';}const icon=p?p.icon:'&#128230;',bg=p?p.bg:'#f5f5f5',catName=p?cats.find(c=>c.id===p.cat)?.label||'':'';return'<div class="item-card"><div class="item-top"><div class="item-left"><div class="item-icon" style="background:'+bg+'">'+icon+'</div><div><div class="item-name">'+item.name+'</div><div class="item-cat">'+catName+'</div></div></div><div style="display:flex;align-items:center"><div class="item-qty"><button class="qty-btn" onclick="changeQty('+i+',-1)">&#8722;</button><span class="qty-num">'+item.qty+'</span><button class="qty-btn" onclick="changeQty('+i+',1)">+</button></div><button class="delete-btn" onclick="removeItem('+i+')">&#215;</button></div></div><div class="prices">'+ph+'</div></div>';}).join('');if(tA||tL||tR){sum.style.display='block';const stores=[{n:'Aldi',v:tA,c:'#1a8c5b'},{n:'Lidl',v:tL,c:'#f5a623'},{n:'Rewe',v:tR,c:'#e02020'}],best=Math.min(tA,tL,tR),worst=Math.max(tA,tL,tR),bestStore=stores.find(s=>s.v===best);sum.innerHTML='<div class="sum-title">Preisvergleich gesamt</div>'+stores.sort((a,b)=>a.v-b.v).map(s=>'<div class="sum-row"><div class="sum-store"><div class="sum-store-dot" style="background:'+s.c+'"></div>'+s.n+'</div><div class="sum-price">'+s.v.toFixed(2)+'&euro;</div></div>').join('')+'<div class="sum-best"><div><div class="sum-best-label">Bestes Angebot</div><div style="font-size:12px;color:#999">'+bestStore.n+' ist am günstigsten</div></div><div class="sum-best-price">'+best.toFixed(2)+'&euro;</div></div><div><span class="savings-badge">Du sparst '+(worst-best).toFixed(2)+'&euro; &#128176;</span></div>';}}
+document.getElementById('newItem').addEventListener('keydown',e=>{if(e.key==='Enter')addItem();});
+renderCats();renderSuggest();
 </script>
 </body>
 </html>
